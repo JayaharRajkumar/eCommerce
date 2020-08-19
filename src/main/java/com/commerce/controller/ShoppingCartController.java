@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class ShoppingCartController {
@@ -43,14 +45,16 @@ public class ShoppingCartController {
     }
 
     @GetMapping("/shoppingCart/checkout")
-    public ModelAndView checkout() {
+    public RedirectView checkout(
+            RedirectAttributes attributes) {
+
         try {
             shoppingCartService.checkout();
         } catch (NotEnoughProductsInStockException e) {
-            return shoppingCart().addObject("outOfStockMessage", e.getMessage());
-        }
-        ModelAndView modelAndView = new ModelAndView("/home");
-        modelAndView.addObject("success", "Products checked out successfully");
-        return modelAndView;
+            attributes.addFlashAttribute("outOfStockMessage", e.getMessage());
+            return new RedirectView("/shoppingCart");
+            }
+        attributes.addFlashAttribute("success", "Products checked out successfully");
+        return new RedirectView("/home");
     }
 }
